@@ -1,0 +1,17 @@
+---
+BasedOnStyle: Google
+AllowShortIfStatementsOnASingleLine: Never
+BreakBeforeBinaryOperators: NonAssignment
+InsertBraces: true
+IncludeBlocks: Regroup
+
+# art.h should always be included first, as it defines `pr_fmt`
+IncludeCategories:
+  - Priority: 0
+    Regex: '"art.h"'
+  - Regex:           '^".*"'
+    Priority:        1
+  - Regex:           '^<.*'
+    Priority:        2
+  - Regex:           '.*'
+    Priority:        3
