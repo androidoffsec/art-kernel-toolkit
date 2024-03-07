@@ -112,11 +112,24 @@ assert_eq vmem/addr $VA
 echo 0xdeadbeefbabecafe > "${MODULE_DIR}/vmem/val"
 assert_eq vmem/val 0xdeadbeefbabecafe
 
-log "Test pmem"
+log "Test pmem (ram)"
 echo $PA > "${MODULE_DIR}/pmem/addr"
 # assert_eq pmem/addr $PA
 echo 0xbabecafedeadbeef > "${MODULE_DIR}/vmem/val"
 assert_eq pmem/val 0xbabecafedeadbeef
+
+# The "pmem read (mmio)" test reads an ARM specific register, so only run it on
+# ARM. Only run on QEMU since the register address might change on other systems
+if [[ $AARCH64 == 1 ]] && [[ $QEMU == 1 ]]; then
+    log "Test pmem read (mmio)"
+    # GIC_DIST base of 0x08000000 plus offset of 8
+    GICD_IIDR_ADDR=0x0000000008000008
+    echo $GICD_IIDR_ADDR > "${MODULE_DIR}/pmem/addr"
+    assert_eq pmem/addr $GICD_IIDR_ADDR
+    assert_eq pmem/val 0x43b # JEP 106 code for ARM
+else
+    log "Skipping pmem read (mmio) test"
+fi
 
 log "Test pmem bytes"
 echo $PA > "${MODULE_DIR}/pmem/addr"
