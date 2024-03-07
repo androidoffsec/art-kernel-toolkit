@@ -69,6 +69,16 @@ divide_hex() {
     printf "0x%x\n" $result
 }
 
+AARCH64=0
+if [[ $(uname -m) == aarch64 ]]; then
+    AARCH64=1
+fi
+
+QEMU=0
+if grep "art-kt-qemu-test" /proc/cmdline > /dev/null 2>&1 ; then
+    QEMU=1
+fi
+
 log "Test whether module is loaded"
 lsmod | grep art_kernel_toolkit || fail
 
@@ -129,13 +139,16 @@ echo $setuid_addr | grep ffff || fail
 log "Test kmalloc free"
 echo $VA > "${MODULE_DIR}/kmalloc/free"
 
-# Only run SMC tests for aarch64. This will fail if there is no EL3 (i.e. in QEMU)
-if [[ $(uname -m) == aarch64 ]]; then
+# Only run SMC tests for aarch64. Don't run this when running QEMU as there may
+# not be any EL3 handler for it
+if [[ $AARCH64 == 1 ]] && [[ $QEMU == 0 ]]; then
     log "Test SMC"
     # Execute SMCCC_VERSION with some unused arguments in different formats
     echo 0x80000000 0xdeadbeef 0777 42 > "${MODULE_DIR}/smc/cmd"
     # Result is SMC Version 1.2, unused arguments are returned as is
     assert_eq smc/result "0x10002 0xdeadbeef 0x1ff 0x2a"
+else
+    log "Skipping SMC test"
 fi
 
 echo -e "${GREEN}[+] All tests passed ${NC}"
