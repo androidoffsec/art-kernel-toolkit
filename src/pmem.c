@@ -199,7 +199,7 @@ err:
 }
 
 static int pmem_val_write_op(void *data, uint64_t value) {
-  int ret = copy_phys_ram((char *)&value, addr, sizeof(value), false);
+  int ret = write_phys((char *)&value, addr, sizeof(value));
   if (ret < 0) {
     return ret;
   }
@@ -208,7 +208,7 @@ static int pmem_val_write_op(void *data, uint64_t value) {
 }
 
 static int pmem_val_read_op(void *data, uint64_t *value) {
-  int ret = copy_phys_ram((char *)value, addr, sizeof(*value), true);
+  int ret = read_phys((char *)value, addr, sizeof(*value));
   if (ret < 0) {
     return ret;
   }
