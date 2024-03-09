@@ -33,5 +33,6 @@ for this purpose.
 
 ### Coding Style
 
-Use `clang-format` to format your code prior to making a pull request. For
-modifications to the README, run `mdformat -w README.md` to reformat it.
+Install [clang-format](https://clang.llvm.org/docs/ClangFormat.html) and
+[mdformat](https://mdformat.readthedocs.io/en/stable/), and then run
+`./format.sh` to format all files before submitting a pull request.
