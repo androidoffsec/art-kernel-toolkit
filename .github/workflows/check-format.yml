@@ -1,0 +1,25 @@
+name: Check formatting
+on: [pull_request]
+jobs:
+  check-format:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install clang-format
+        run: |
+          wget https://apt.llvm.org/llvm.sh
+          chmod +x llvm.sh
+          sudo ./llvm.sh 15
+          sudo apt install clang-format-15
+
+          mkdir ~/bin
+          ln -s /usr/bin/clang-format-15 ~/bin/clang-format
+
+      - name: Install mdformat
+        run: |
+          pipx install mdformat
+          pipx inject mdformat mdformat-gfm mdformat-frontmatter mdformat-footnote
+
+      - name: Check format
+        run: PATH=~/bin:$PATH ./format.sh --check
