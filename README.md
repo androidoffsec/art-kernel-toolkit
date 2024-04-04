@@ -6,40 +6,40 @@ Common Kernels and Linux kernels.
 
 Example use cases:
 
--   Setting up the right conditions to trigger kernel bugs. You may see a bug
-    that requires specific conditions to be triggered, such as a particular heap
-    layout. You can use the `kmalloc` plugin to do this from userspace, so you
-    can get to reproducing the actual bug faster before investing more time in a
-    full exploit.
--   As a placeholder step in an exploit chain. If you're working on an exploit
-    for a bug but don't have an information leak yet, use the `vmem` plugin as
-    placeholder for this step in your exploit chain until you find a real
-    information leak.
--   Testing functionality at higher privilege levels. For example, on ARM
-    systems only EL1 has the privilege to make HVC/SMC calls that are handled by
-    EL2 and EL3. You can use the `hvc` and `smc` plugins to make these
-    privileged calls from userspace.
+- Setting up the right conditions to trigger kernel bugs. You may see a bug that
+  requires specific conditions to be triggered, such as a particular heap
+  layout. You can use the `kmalloc` plugin to do this from userspace, so you can
+  get to reproducing the actual bug faster before investing more time in a full
+  exploit.
+- As a placeholder step in an exploit chain. If you're working on an exploit for
+  a bug but don't have an information leak yet, use the `vmem` plugin as
+  placeholder for this step in your exploit chain until you find a real
+  information leak.
+- Testing functionality at higher privilege levels. For example, on ARM systems
+  only EL1 has the privilege to make HVC/SMC calls that are handled by EL2 and
+  EL3. You can use the `hvc` and `smc` plugins to make these privileged calls
+  from userspace.
 
 Contributions are welcome, see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 This is not an officially supported Google product.
 
---------------------------------------------------------------------------------
+______________________________________________________________________
 
--   [Clone and Build](#clone-and-build)
--   [Installing](#installing)
--   [Usage](#usage)
-    -   [Plugins](#plugins)
-        -   [vmem](#vmem)
-        -   [pmem](#pmem)
-        -   [addr](#addr)
-        -   [kaslr](#kaslr)
-        -   [kallsyms](#kallsyms)
-        -   [kmalloc](#kmalloc)
-        -   [asm](#asm)
-        -   [smc](#smc)
-        -   [hvc](#hvc)
--   [Security](#security)
+- [Clone and Build](#clone-and-build)
+- [Installing](#installing)
+- [Usage](#usage)
+  - [Plugins](#plugins)
+    - [vmem](#vmem)
+    - [pmem](#pmem)
+    - [addr](#addr)
+    - [kaslr](#kaslr)
+    - [kallsyms](#kallsyms)
+    - [kmalloc](#kmalloc)
+    - [asm](#asm)
+    - [smc](#smc)
+    - [hvc](#hvc)
+- [Security](#security)
 
 ## Clone and Build
 
@@ -167,12 +167,12 @@ This plugin allows reading/writing from arbitrary kernel virtual memory.
 
 Files:
 
--   `vmem/addr <addr>` (RW)
-    -   `addr`: the virtual address to read from or write to
-    -   Returns: the last address written when read
--   `vmem/val <val>` (RW)
-    -   `val`: the 64-bit value to write to the address specified in `vmem/addr`
-    -   Returns: the 64-bit value at the address specified in`vmem/addr`
+- `vmem/addr <addr>` (RW)
+  - `addr`: the virtual address to read from or write to
+  - Returns: the last address written when read
+- `vmem/val <val>` (RW)
+  - `val`: the 64-bit value to write to the address specified in `vmem/addr`
+  - Returns: the 64-bit value at the address specified in`vmem/addr`
 
 ##### Example
 
@@ -198,23 +198,23 @@ This plugin allows reading/writing from arbitrary physical memory.
 
 Files:
 
--   `pmem/addr <addr>` (RW)
-    -   `addr`: the physical address to read from or write to
-    -   Returns: the last address written when read
--   `pmem/val <val>` (RW)
-    -   `val`: the 64-bit value to write to the address specified in `pmem/addr`
-    -   Returns: the 64-bit value at the address specified in `pmem/addr`
--   `pmem/bytes <byte_str>` (RW)
-    -   `byte_str`: a raw string of bytes to write to the address specified in
-        `pmem/addr`
-    -   Returns: the raw bytes at the address specified in `pmem/addr`
--   `pmem/bytes-read-size <max_length>` (RW)
-    -   `max_length`: the maximum length to allow for reads from `pmem/bytes`
-        (defaults to 8). Setting this is optional if you will be manually
-        reading the exact number of bytes you want from `pmem/bytes`. However,
-        when using tools like `cat` or even `xxd` with the `-l` argument, this
-        value should be specified to avoid reading out of bounds.
-    -   Returns: the last value written to `pmem/bytes-read-size`
+- `pmem/addr <addr>` (RW)
+  - `addr`: the physical address to read from or write to
+  - Returns: the last address written when read
+- `pmem/val <val>` (RW)
+  - `val`: the 64-bit value to write to the address specified in `pmem/addr`
+  - Returns: the 64-bit value at the address specified in `pmem/addr`
+- `pmem/bytes <byte_str>` (RW)
+  - `byte_str`: a raw string of bytes to write to the address specified in
+    `pmem/addr`
+  - Returns: the raw bytes at the address specified in `pmem/addr`
+- `pmem/bytes-read-size <max_length>` (RW)
+  - `max_length`: the maximum length to allow for reads from `pmem/bytes`
+    (defaults to 8). Setting this is optional if you will be manually reading
+    the exact number of bytes you want from `pmem/bytes`. However, when using
+    tools like `cat` or even `xxd` with the `-l` argument, this value should be
+    specified to avoid reading out of bounds.
+  - Returns: the last value written to `pmem/bytes-read-size`
 
 ##### Example
 
@@ -242,14 +242,14 @@ Allows converting virtual address to and from physical addresses.
 
 Files:
 
--   `addr/va <va>` (RW)
-    -   `va`: the virtual address you want to convert to a physical address
-    -   Returns: the virtual address of the last address written to either
-        `addr/va` or `addr/pa`
--   `addr/pa <pa>` (RW)
-    -   `pa`: the physical address you want to convert to a virtual address
-    -   Returns: the physical address of the last address written to `addr/va`
-        or `addr/pa`
+- `addr/va <va>` (RW)
+  - `va`: the virtual address you want to convert to a physical address
+  - Returns: the virtual address of the last address written to either `addr/va`
+    or `addr/pa`
+- `addr/pa <pa>` (RW)
+  - `pa`: the physical address you want to convert to a virtual address
+  - Returns: the physical address of the last address written to `addr/va` or
+    `addr/pa`
 
 ##### Example
 
@@ -269,8 +269,8 @@ Allows finding the KASLR offset. Currently only implemented for arm64.
 
 Files:
 
--   `kaslr/offset` (R)
-    -   Returns: the KASLR offset
+- `kaslr/offset` (R)
+  - Returns: the KASLR offset
 
 ##### Example
 
@@ -287,12 +287,11 @@ addresses from being seen in `/proc/kallsyms`).
 
 Files:
 
--   `kallsyms/lookup_name <sym_name>` (RW)
-    -   `sym_name`: name of the symbol you want to lookup
-    -   Returns: the last symbol name written to this file
--   `kallsyms/addr` (R)
-    -   Returns: the address of the last symbol written to
-        `kallsyms/lookup_name`
+- `kallsyms/lookup_name <sym_name>` (RW)
+  - `sym_name`: name of the symbol you want to lookup
+  - Returns: the last symbol name written to this file
+- `kallsyms/addr` (R)
+  - Returns: the address of the last symbol written to `kallsyms/lookup_name`
 
 ##### Example
 
@@ -309,18 +308,18 @@ This plugin allows calling `kmalloc` and `kfree`.
 
 Files:
 
--   `kmalloc/alloc <size>` (W)
-    -   `size`: size of memory in bytes to allocate
--   `kmalloc/free <addr>` (W)
-    -   `addr`: address to call `kfree` on
--   `kmalloc/va` (R)
-    -   Returns: the virtual address of the last allocated chunk
--   `kmalloc/pa` (R)
-    -   Returns: the physical address of the last allocated chunk
--   `kmalloc/pfn` (R)
-    -   Returns: the page frame number of the last allocated chunk
--   `kmalloc/size` (R)
-    -   Returns: the size of the last allocated chunk
+- `kmalloc/alloc <size>` (W)
+  - `size`: size of memory in bytes to allocate
+- `kmalloc/free <addr>` (W)
+  - `addr`: address to call `kfree` on
+- `kmalloc/va` (R)
+  - Returns: the virtual address of the last allocated chunk
+- `kmalloc/pa` (R)
+  - Returns: the physical address of the last allocated chunk
+- `kmalloc/pfn` (R)
+  - Returns: the page frame number of the last allocated chunk
+- `kmalloc/size` (R)
+  - Returns: the size of the last allocated chunk
 
 ##### Example
 
@@ -350,16 +349,16 @@ Allows executing arbitrary assembly instructions. Only available on arm64.
 
 Files:
 
--   `asm/asm <asm_byte_str>` (W)
-    -   `asm_byte_str`: the raw byte string of compiled assembly code to
-        execute. You do not need to add a `ret` instruction to your code as it
-        is added for you, and you do not need to worry about preserving the
-        value of any registers except for the stack pointer. You should make
-        sure your code does not corrupt any stack frames in the call stack. The
-        assembly will immediately be executed after writing to this file.
--   `asm/x0` to `asm/x28` (R)
-    -   Returns: the value of the corresponding register when the assembly
-        finished executing.
+- `asm/asm <asm_byte_str>` (W)
+  - `asm_byte_str`: the raw byte string of compiled assembly code to execute.
+    You do not need to add a `ret` instruction to your code as it is added for
+    you, and you do not need to worry about preserving the value of any
+    registers except for the stack pointer. You should make sure your code does
+    not corrupt any stack frames in the call stack. The assembly will
+    immediately be executed after writing to this file.
+- `asm/x0` to `asm/x28` (R)
+  - Returns: the value of the corresponding register when the assembly finished
+    executing.
 
 ##### Example
 
@@ -383,14 +382,13 @@ Allows making SMC (supervisor) calls from userspace. Only available on arm64.
 
 Files:
 
--   `smc/cmd [x0] [x1] [x2] [x3] [x4] [x5] [x6] [x7]` (RW)
-    -   `x0` to `x7`: The values to set for the registers before executing an
-        `smc` instruction. If a register is not specified, it is assumed to be
-        zero
-    -   Returns: the last command string written to `smc/cmd`
--   `smc/result` (R)
-    -   Returns: four space-separated hex integers, representing the values of
-        `x0` to `x4` after the SMC has completed
+- `smc/cmd [x0] [x1] [x2] [x3] [x4] [x5] [x6] [x7]` (RW)
+  - `x0` to `x7`: the values to set for the registers before executing an `smc`
+    instruction. If a register is not specified, it is assumed to be zero
+  - Returns: the last command string written to `smc/cmd`
+- `smc/result` (R)
+  - Returns: four space-separated hex integers, representing the values of `x0`
+    to `x4` after the SMC has completed
 
 ##### Example
 
@@ -411,14 +409,13 @@ arm64.
 
 Files:
 
--   `hvc/cmd [x0] [x1] [x2] [x3] [x4] [x5] [x6] [x7]` (RW)
-    -   `x0` to `x7`: The values to set for the registers before executing an
-        `hvc` instruction. If a register is not specified, it is assumed to be
-        zero
-    -   Returns: the last command string written to `hvc/cmd`
--   `hvc/result` (R)
-    -   Returns: four space-separated hex integers, representing the values of
-        `x0` to `x4` after the SMC has completed
+- `hvc/cmd [x0] [x1] [x2] [x3] [x4] [x5] [x6] [x7]` (RW)
+  - `x0` to `x7`: the values to set for the registers before executing an `hvc`
+    instruction. If a register is not specified, it is assumed to be zero
+  - Returns: the last command string written to `hvc/cmd`
+- `hvc/result` (R)
+  - Returns: four space-separated hex integers, representing the values of `x0`
+    to `x4` after the SMC has completed
 
 ## Security
 
