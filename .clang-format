@@ -5,10 +5,8 @@ BreakBeforeBinaryOperators: NonAssignment
 InsertBraces: true
 IncludeBlocks: Regroup
 
-# art.h should always be included first, as it defines `pr_fmt`
+# Local includes should come before system includes
 IncludeCategories:
-  - Priority: 0
-    Regex: '"art.h"'
   - Regex:           '^".*"'
     Priority:        1
   - Regex:           '^<.*'
