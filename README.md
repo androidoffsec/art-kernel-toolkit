@@ -36,6 +36,7 @@ This is not an officially supported Google product.
         -   [kaslr](#kaslr)
         -   [kallsyms](#kallsyms)
         -   [kmalloc](#kmalloc)
+        -   [asm](#asm)
         -   [smc](#smc)
         -   [hvc](#hvc)
 -   [Security](#security)
@@ -341,6 +342,39 @@ $ cat /d/art/kmalloc/pfn
 
 # Free allocated memory
 $ echo $(cat /d/art/kmalloc/va) > /d/art/kmalloc/va
+```
+
+#### asm
+
+Allows executing arbitrary assembly instructions. Only available on arm64.
+
+Files:
+
+-   `asm/asm <asm_byte_str>` (W)
+    -   `asm_byte_str`: the raw byte string of compiled assembly code to
+        execute. You do not need to add a `ret` instruction to your code as it
+        is added for you, and you do not need to worry about preserving the
+        value of any registers except for the stack pointer. You should make
+        sure your code does not corrupt any stack frames in the call stack. The
+        assembly will immediately be executed after writing to this file.
+-   `asm/x0` to `asm/x28` (R)
+    -   Returns: the value of the corresponding register when the assembly
+        finished executing.
+
+##### Example
+
+```bash
+# mov x0, 042; mov x9, 42; mov x28, 0x42
+$ echo "400480d2490580d25c0880d2" | xxd -r -p > /d/art/asm/asm
+
+$ cat /d/art/asm/x0
+0x0000000000000022
+
+$ cat /d/art/asm/x9
+0x000000000000002a
+
+$ cat /d/art/asm/x28
+0x0000000000000042
 ```
 
 #### smc
