@@ -213,6 +213,7 @@ Files:
         reading the exact number of bytes you want from `pmem/bytes`. However,
         when using tools like `cat` or even `xxd` with the `-l` argument, this
         value should be specified to avoid reading out of bounds.
+    -   Returns: the last value written to `pmem/bytes-read-size`
 
 ##### Example
 
@@ -352,7 +353,7 @@ Files:
     -   `x0` to `x7`: The values to set for the registers before executing an
         `smc` instruction. If a register is not specified, it is assumed to be
         zero
-    -   Returns: the last command string written to `hvc/cmd
+    -   Returns: the last command string written to `smc/cmd`
 -   `smc/result` (R)
     -   Returns: four space-separated hex integers, representing the values of
         `x0` to `x4` after the SMC has completed
@@ -380,7 +381,7 @@ Files:
     -   `x0` to `x7`: The values to set for the registers before executing an
         `hvc` instruction. If a register is not specified, it is assumed to be
         zero
-    -   Returns: the last command string written to `hvc/cmd
+    -   Returns: the last command string written to `hvc/cmd`
 -   `hvc/result` (R)
     -   Returns: four space-separated hex integers, representing the values of
         `x0` to `x4` after the SMC has completed
