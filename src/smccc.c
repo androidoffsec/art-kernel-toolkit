@@ -16,7 +16,6 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "art.h"
 #include "smccc.h"
 
 #include <asm-generic/errno-base.h>

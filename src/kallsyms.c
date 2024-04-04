@@ -16,9 +16,9 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "art.h"
 #include "kallsyms.h"
 
+#include "art.h"
 #include "art_debugfs.h"
 
 #include <asm-generic/errno-base.h>

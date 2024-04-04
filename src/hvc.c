@@ -17,7 +17,6 @@
  */
 
 #include "art.h"
-
 #include "smccc.h"
 
 static struct dentry *hvc_dentry;

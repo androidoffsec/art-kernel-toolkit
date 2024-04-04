@@ -17,7 +17,6 @@
  */
 
 #include "art.h"
-
 #include "art_debugfs.h"
 
 #include <linux/debugfs.h>

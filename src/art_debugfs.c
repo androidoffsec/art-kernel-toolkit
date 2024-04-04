@@ -16,8 +16,6 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "art.h"
-
 #include "art_debugfs.h"
 
 #include <linux/debugfs.h>
