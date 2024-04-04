@@ -164,4 +164,18 @@ else
     log "Skipping SMC test"
 fi
 
+log "Test asm"
+
+assert_eq asm/x0 0x0000000000000000
+assert_eq asm/x9 0x0000000000000000
+assert_eq asm/x28 0x0000000000000000
+
+# mov x0, 042; mov x9, 42; mov x28, 0x42
+ASM_CODE="400480d2490580d25c0880d2"
+echo $ASM_CODE | xxd -r -p > "${MODULE_DIR}/asm/asm"
+
+assert_eq asm/x0 0x0000000000000022
+assert_eq asm/x9 0x000000000000002a
+assert_eq asm/x28 0x0000000000000042
+
 echo -e "${GREEN}[+] All tests passed ${NC}"
