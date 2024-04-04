@@ -35,6 +35,8 @@ art-kernel-toolkit-$(CONFIG_ARM64) += src/hvc.o src/smc.o src/smccc.o
 CWD := $(ROOT_DIR)/$(KERNEL_DIR)/$(M)
 
 ccflags-y := -Wall -Werror
+ccflags-y += -D'pr_fmt(fmt)=KBUILD_MODNAME ": %s(): " fmt, __func__'
+
 ldflags-y := -T$(CWD)/layout.lds
 
 # For some reason when building ACK for x86_64, we get some -Wframe-address

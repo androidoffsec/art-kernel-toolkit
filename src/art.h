@@ -19,8 +19,6 @@
 #ifndef ART_H
 #define ART_H
 
-#define pr_fmt(fmt) KBUILD_MODNAME ": %s(): " fmt, __func__
-
 #include <linux/fs.h>
 
 typedef int (*art_plugin_init_func)(struct dentry *);
