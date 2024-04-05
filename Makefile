@@ -29,6 +29,7 @@ art-kernel-toolkit-y += src/art_debugfs.o
 
 art-kernel-toolkit-$(CONFIG_ARM64) += src/arm_helpers.o
 art-kernel-toolkit-$(CONFIG_ARM64) += src/asm.o
+art-kernel-toolkit-$(CONFIG_ARM64) += src/msr.o
 
 art-kernel-toolkit-$(CONFIG_ARM64) += src/hvc.o src/smc.o src/smccc.o
 

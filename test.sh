@@ -191,4 +191,51 @@ cat /tmp/asm_code > "${MODULE_DIR}/asm/asm" && fail
 echo 0x3 > "${MODULE_DIR}/asm/cpumask"
 cat /tmp/asm_code > "${MODULE_DIR}/asm/asm" && fail
 
+log "Test msr"
+
+# Set register by writing in individual fields
+echo 3 > "${MODULE_DIR}/msr/op0"
+echo 1 > "${MODULE_DIR}/msr/op1"
+echo 1 > "${MODULE_DIR}/msr/CRn"
+echo 1 > "${MODULE_DIR}/msr/CRm"
+echo 1 > "${MODULE_DIR}/msr/op2"
+assert_eq msr/regname s3_1_c1_c1_1
+
+# Set register by writing uppercase and lowercase common names
+echo sctlr_el1 > "${MODULE_DIR}/msr/regname"
+assert_eq msr/regname s3_0_c1_c0_0
+
+assert_eq msr/op0 3
+assert_eq msr/op1 0
+assert_eq msr/CRn 1
+assert_eq msr/CRm 0
+assert_eq msr/op2 0
+
+echo SCTLR_EL1 > "${MODULE_DIR}/msr/regname"
+assert_eq msr/regname s3_0_c1_c0_0
+
+# Enabled flags: EPAN UCI SPAN TSCXT NTWE UCT DZE I SED SA0 SA C M
+SCTLR_EL1_VAL=0x200000034f4d91d
+
+# Verify register value
+assert_eq msr/msr $SCTLR_EL1_VAL
+
+# Verify zero and multi-CPU reads fails
+echo 0 > "${MODULE_DIR}/msr/cpumask"
+cat "${MODULE_DIR}/msr/msr" && fail
+
+echo 0x3 > "${MODULE_DIR}/msr/cpumask"
+cat "${MODULE_DIR}/msr/msr" && fail
+
+# Set cpumask back to its original value
+echo 0x1 > "${MODULE_DIR}/msr/cpumask"
+
+# Disable EPAN and SPAN
+echo 0x3474d91d > "${MODULE_DIR}/msr/msr"
+assert_eq msr/msr 0x3474d91d
+
+# The original value should still be set on a different CPU
+echo 0x2 > "${MODULE_DIR}/msr/cpumask"
+assert_eq msr/msr $SCTLR_EL1_VAL
+
 echo -e "${GREEN}[+] All tests passed ${NC}"

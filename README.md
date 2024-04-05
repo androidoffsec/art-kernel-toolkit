@@ -37,6 +37,7 @@ ______________________________________________________________________
     - [kallsyms](#kallsyms)
     - [kmalloc](#kmalloc)
     - [asm](#asm)
+    - [msr](#msr)
     - [smc](#smc)
     - [hvc](#hvc)
 - [Security](#security)
@@ -380,6 +381,99 @@ $ cat /d/art/asm/x9
 
 $ cat /d/art/asm/x28
 0x0000000000000042
+```
+
+#### msr
+
+Allows reading/writing model-specific registers (MSRs). Only available on arm64.
+
+Files:
+
+- `msr/msr <value>` (RW)
+  - `value`: the value to write to the MSR specified in `msr/regname`.
+  - Returns: the current value of the MSR specified in `msr/regname` on the CPU
+    specified in `msr/cpumask` when read.
+- `msr/regname <regname>` (RW)
+  - `regname`: the name of the MSR to read or write. Some common MSR names such
+    as `sctlr_el1` are defined. For MSRs where the common name is not defined,
+    use the encoded register form `s<op0>_<op1>_<CRn>_<CRm>_<op2>`. Writing to
+    this file will change the values of `msr/op0`, `msr/op1`, `msr/CRn`,
+    `msr/CRm`, `msr/op2`. You can also write to those files as an alternative to
+    writing to this file.
+  - Returns: the encoded MSR name in the form `s<op0>_<op1>_<CRn>_<CRm>_<op2>`.
+- `msr/cpumask <mask>` (RW)
+  - `mask`: a bitmask choosing which CPU to run the code on (defaults to 1,
+    meaning CPU 0). Exactly one bit of this bitmask must be set when reading MSR
+    values, although multiple bits may be set when writing MSR values.
+  - Returns: the current CPU mask.
+- `msr/op0 <op0>`, `msr/op1 <op1>`, `msr/CRn <CRn>`, `msr/CRm <CRm>`,
+  `msr/op2 <op2>` (RW)
+  - `op0`, `op1`, `CRn`, `CRm`, `op2`: Sets the corresponding component of the
+    MSR encoding. Writing to these files will change the output of
+    `msr/regname`.
+  - Returns: the corresponding component of the encoding of the currently
+    selected MSR
+
+Note: The value written to `msr/regname` can be a common MSR name (if defined,
+check the source for the full list) or an encoded register name. However, the
+parsing for the encoded register name is intentionally not strict. It is case
+insensitive, and any non-numeric characters are replaced with spaces. As long as
+five space-separate numeric values remain, it will successfully be parsed. See
+the examples section for more details.
+
+##### Example
+
+```bash
+# Read SCTLR_EL1
+$ echo sctlr_el1 > /d/art/msr/regname
+$ cat /d/art/msr/regname
+s3_0_c1_c0_0
+$ cat /d/art/msr/msr
+0x200000034f4d91d
+
+# Set cpumask to CPU 0 and CPU 1
+$ echo 0x3 > /d/art/msr/cpumask
+
+# Disable EPAN and SPAN on CPU 0 and CPU 1
+$ echo 0x3474d91d > /d/art/msr/msr
+
+# Set CPU mask back to individual CPUs when reading
+$ echo 0x1 > /d/art/msr/cpumask
+
+# EPAN and SPAN are now unset on CPU 0 and CPU 1
+$ cat /d/art/msr/msr
+0x3474d91d
+
+$ echo 0x2 > /d/art/msr/cpumask
+$ cat /d/art/msr/msr
+0x3474d91d
+
+# SCTLR_EL1 is unchanged on CPU 2
+$ echo 0x4 > /d/art/msr/cpumask
+$ cat /d/art/msr/msr
+0x200000034f4d91d
+```
+
+You can set individual components of the register encoding instead of setting
+`msr/regname`:
+
+```bash
+$ echo 3 > /d/art/msr/op0
+$ echo 1 > /d/art/msr/op1
+$ echo 0 > /d/art/msr/CRn
+$ echo 0 > /d/art/msr/CRm
+$ echo 4 > /d/art/msr/op2
+$ cat /d/art/msr/regname
+s3_1_c0_c0_4
+```
+
+You can write an encoded MSR name to `msr/regname`, taking advantage of the
+loose parsing. All of the following commands are equivalent:
+
+```bash
+$ echo s3_1_c0_c0_4 > /d/art/msr/regname
+$ echo 3_1_0_0_4 > /d/art/msr/regname
+$ echo 3 1 0 0 4 > /d/art/msr/regname
 ```
 
 #### smc

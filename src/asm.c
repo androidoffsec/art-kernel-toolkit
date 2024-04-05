@@ -25,6 +25,7 @@
 #include <linux/debugfs.h>
 #include <linux/mm.h>
 #include <linux/slab.h>
+#include <linux/smp.h>
 #include <linux/types.h>
 #include <linux/vmalloc.h>
 
@@ -51,7 +52,8 @@ static void exec_code_smp_call_func(void *info) {
   uintptr_t code_addr = exec_info->code_addr;
   struct arm64_regs *regs = exec_info->regs;
 
-  pr_info("Jumping to shellcode at %lx", code_addr);
+  pr_info("Jumping to shellcode at %lx on CPU %d\n", code_addr,
+          smp_processor_id());
   exec_code(code_addr, regs);
 }
 
