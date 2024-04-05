@@ -24,22 +24,22 @@ Contributions are welcome, see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 This is not an officially supported Google product.
 
-______________________________________________________________________
+---
 
 - [Clone and Build](#clone-and-build)
 - [Installing](#installing)
 - [Usage](#usage)
   - [Plugins](#plugins)
-    - [vmem](#vmem)
-    - [pmem](#pmem)
-    - [addr](#addr)
-    - [kaslr](#kaslr)
-    - [kallsyms](#kallsyms)
-    - [kmalloc](#kmalloc)
-    - [asm](#asm)
-    - [msr](#msr)
-    - [smc](#smc)
-    - [hvc](#hvc)
+    - [vmem: Read/Write Virtual Memory](#vmem)
+    - [pmem: Read/Write Physical Memory](#pmem)
+    - [addr: Virt to Phys and Phys to Virt Translation](#addr)
+    - [kaslr: Find KASLR Offset](#kaslr)
+    - [kallsyms: Lookup Symbol Addresses](#kallsyms)
+    - [kmalloc: Allocate/Free Memory](#kmalloc)
+    - [asm: Execute Arbitrary Assembly](#asm)
+    - [msr: Read/Write MSRs](#msr)
+    - [smc: Execute SMCs](#smc)
+    - [hvc: Execute HVCs](#hvc)
 - [Security](#security)
 
 ## Clone and Build
