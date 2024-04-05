@@ -19,6 +19,7 @@
 #ifndef ASM_H
 #define ASM_H
 
+#include <linux/cpumask.h>
 #include <linux/types.h>
 
 // We only store registers up to x28, the others are not useful for us
@@ -54,6 +55,7 @@ struct arm64_regs {
   uint64_t x28;
 } __attribute__((packed));
 
-int exec_asm(uint8_t *buf, size_t len, struct arm64_regs *regs);
+int exec_asm(uint8_t *buf, size_t len, struct arm64_regs *regs,
+             const cpumask_t *mask);
 
 #endif  // ASM_H
