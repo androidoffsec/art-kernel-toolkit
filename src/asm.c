@@ -21,14 +21,17 @@
 #include "art.h"
 #include "kallsyms.h"
 
+#include <linux/cpumask.h>
 #include <linux/debugfs.h>
 #include <linux/mm.h>
 #include <linux/slab.h>
+#include <linux/types.h>
 #include <linux/vmalloc.h>
 
 extern void exec_code(uintptr_t code_addr, struct arm64_regs *regs);
 
 static struct arm64_regs regs;
+static cpumask_t cpu_mask = CPU_MASK_CPU0;
 
 typedef int (*set_memory_x_t)(unsigned long addr, int numpages);
 static set_memory_x_t __art_set_memory_x;
@@ -38,9 +41,25 @@ static __nocfi int art_set_memory_x(unsigned long addr, int numpages) {
   return __art_set_memory_x(addr, numpages);
 }
 
-int exec_asm(uint8_t *buf, size_t len, struct arm64_regs *regs) {
+struct exec_code_info {
+  uintptr_t code_addr;
+  struct arm64_regs *regs;
+};
+
+static void exec_code_smp_call_func(void *info) {
+  struct exec_code_info *exec_info = (struct exec_code_info *)info;
+  uintptr_t code_addr = exec_info->code_addr;
+  struct arm64_regs *regs = exec_info->regs;
+
+  pr_info("Jumping to shellcode at %lx", code_addr);
+  exec_code(code_addr, regs);
+}
+
+int exec_asm(uint8_t *buf, size_t len, struct arm64_regs *regs,
+             const cpumask_t *cpu_mask) {
   int res;
   uint32_t ret_ins = 0xd65f03c0;
+  struct exec_code_info info;
   void (*exec_page)(void);
 
   size_t alloc_size = PAGE_ALIGN(len);
@@ -63,8 +82,9 @@ int exec_asm(uint8_t *buf, size_t len, struct arm64_regs *regs) {
     goto err;
   }
 
-  pr_info("Jumping to shellcode at %lx", (uintptr_t)exec_page);
-  exec_code((uintptr_t)exec_page, regs);
+  info.code_addr = (uintptr_t)exec_page;
+  info.regs = regs;
+  on_each_cpu_mask(cpu_mask, exec_code_smp_call_func, &info, true);
 
 err:
   vfree(exec_page);
@@ -77,13 +97,18 @@ static ssize_t asm_write_op(struct file *fp, const char __user *user_buffer,
   int num_bytes;
   uint8_t *asm_code = kzalloc(count, GFP_KERNEL);
 
+  if (cpumask_weight(&cpu_mask) != 1) {
+    pr_err("Exactly one CPU must be selected\n");
+    return -EINVAL;
+  }
+
   num_bytes =
       simple_write_to_buffer(asm_code, count, position, user_buffer, count);
   if (num_bytes < 0) {
     return num_bytes;
   }
 
-  res = exec_asm(asm_code, count, &regs);
+  res = exec_asm(asm_code, count, &regs, &cpu_mask);
   if (res < 0) {
     return res;
   }
@@ -103,6 +128,7 @@ static int asm_init(struct dentry *parent) {
   }
 
   debugfs_create_file("asm", 0222, parent, NULL, &asm_fops);
+  debugfs_create_ulong("cpumask", 0666, parent, &cpumask_bits(&cpu_mask)[0]);
 
   // Create a read-only debugfs file for each register in the `regs` struct
   for (i = 0; i <= 28; i++) {

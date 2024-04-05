@@ -356,6 +356,12 @@ Files:
     registers except for the stack pointer. You should make sure your code does
     not corrupt any stack frames in the call stack. The assembly will
     immediately be executed after writing to this file.
+- `asm/cpumask <mask>` (RW)
+  - `mask`: a bitmask choosing which CPU to run the code on (defaults to 1,
+    meaning CPU 0). Exactly one bit of this bitmask must be set, to run the same
+    code on multiple CPUs, you will need to write to `asm/asm` once per CPU,
+    changing the mask in between writes.
+  - Returns: the current CPU mask.
 - `asm/x0` to `asm/x28` (R)
   - Returns: the value of the corresponding register when the assembly finished
     executing.

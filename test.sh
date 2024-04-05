@@ -172,10 +172,23 @@ assert_eq asm/x28 0x0000000000000000
 
 # mov x0, 042; mov x9, 42; mov x28, 0x42
 ASM_CODE="400480d2490580d25c0880d2"
-echo $ASM_CODE | xxd -r -p > "${MODULE_DIR}/asm/asm"
+
+# For some reason if the `xxd > /d/art/asm/asm` write fails, the exit code is
+# still zero. This doesn't happen for `cat`, so we write to a temporary file and
+# `cat` that into the `asm` file
+echo $ASM_CODE | xxd -r -p > /tmp/asm_code
+
+cat /tmp/asm_code > "${MODULE_DIR}/asm/asm"
 
 assert_eq asm/x0 0x0000000000000022
 assert_eq asm/x9 0x000000000000002a
 assert_eq asm/x28 0x0000000000000042
+
+# Verify zero and multi-CPU asm writes fails
+echo 0 > "${MODULE_DIR}/asm/cpumask"
+cat /tmp/asm_code > "${MODULE_DIR}/asm/asm" && fail
+
+echo 0x3 > "${MODULE_DIR}/asm/cpumask"
+cat /tmp/asm_code > "${MODULE_DIR}/asm/asm" && fail
 
 echo -e "${GREEN}[+] All tests passed ${NC}"
