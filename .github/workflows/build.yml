@@ -62,6 +62,12 @@ jobs:
 
       - run: ls -lR
 
+      - name: Get cached clang
+        uses: actions/cache@v4
+        with:
+          key: clang
+          path: toolchain/clang
+
       - name: Build art-kt
         shell: bash
         run: |
