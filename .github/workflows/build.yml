@@ -93,8 +93,13 @@ jobs:
           # Expand the glob
           MODULES_DIR=$(echo $MODULES_DIR)
 
-          # The module won't load without `modules.dep`
-          echo "extra/art-kernel-toolkit.ko:" > $MODULES_DIR/modules.dep
+          ART_KT_MOD=$(find $MODULES_DIR -name art-kernel-toolkit.ko)
+
+          # Get the directory the module is in i.e. `extra` or `updates`
+          ART_KT_DIR=$(basename $(dirname $ART_KT_MOD))
+
+          # `modprobe` won't work without `modules.dep`
+          echo "${ART_KT_DIR}/art-kernel-toolkit.ko:" > $MODULES_DIR/modules.dep
 
           # LINUX_OUT, ROOTFS, and QEMU_KERNEL_IMAGE are set in the environment
           make art-kt_test | tee test.log
