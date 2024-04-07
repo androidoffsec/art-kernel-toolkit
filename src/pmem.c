@@ -56,6 +56,12 @@ static void pmem_kunmap(void *phys_addr) {
 #endif /* KERNEL_VERSION(5, 11, 0) */
 }
 
+// x86_64 doesn't define this macro but arm64 does, so we define it here if it's
+// not defined
+#ifndef phys_to_page
+#define phys_to_page(phys) pfn_to_page(__phys_to_pfn(phys))
+#endif
+
 static int copy_phys_ram(char *buffer, uint64_t phys_addr, size_t len,
                          bool to_buffer) {
   ssize_t ret = -EINVAL;
