@@ -1,0 +1,96 @@
+name: Build
+on: [push, pull_request, workflow_dispatch]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [arm64, x86_64]
+        kernel: [{ack: 0, version: 5.10.214}, {ack: 0, version: 5.15.153}, {ack: 0, version: 6.1.84}, {ack: 0, version: 6.6.25}, {ack: 1, version: android13-5.10-lts}, {ack: 1, version: android14-5.15-lts}]
+    env:
+      ACK: ${{ matrix.kernel.ack }}
+      ARCH: ${{ matrix.arch }}
+      ARTIFACTS_URL: https://github.com/gsingh93/linux-exploit-dev-env/releases/download/2024.04.07-ebc24a8
+      HEADERS_URL: https://github.com/gsingh93/linux-exploit-dev-env/releases/download/linux-headers-2024.04.07-ebc24a8
+    steps:
+
+      - name: Clone Linux Exploit Dev Environment
+        uses: actions/checkout@v4
+        with:
+          repository: gsingh93/linux-exploit-dev-env
+
+      - name: Clone build rules for art-kt
+        uses: actions/checkout@v4
+        with:
+          repository: gsingh93/linux-exploit-dev-env-art-kt
+          submodules: true
+          path: external/art-kt
+
+      - name: Download kernel artifacts
+        shell: bash
+        run: |
+          set -x
+
+          if [ $ACK -eq 0 ]; then
+            KERNEL_TYPE=linux
+          else
+            KERNEL_TYPE=ack
+          fi
+
+          if [ $ARCH == x86_64 ]; then
+            KERNEL_IMAGE_NAME=bzImage
+          elif [ $ARCH == arm64 ]; then
+            KERNEL_IMAGE_NAME=Image
+          fi
+
+          SUFFIX=${KERNEL_TYPE}-${{ matrix.kernel.version }}-${ARCH}
+
+          wget --no-verbose ${ARTIFACTS_URL}/${KERNEL_IMAGE_NAME}-${SUFFIX}
+          wget --no-verbose ${ARTIFACTS_URL}/alpine-${ARCH}.img
+          wget --no-verbose ${HEADERS_URL}/linux-headers-${SUFFIX}.deb
+
+          dpkg-deb -R linux-headers-${SUFFIX}.deb linux-headers
+
+          LINUX_OUT="$PWD/linux-headers/usr/src/linux-headers-*"
+
+          # The extra echo is to force glob expansion
+          echo "LINUX_OUT=$(echo $LINUX_OUT)" >> $GITHUB_ENV
+          echo "QEMU_KERNEL_IMAGE=$PWD/${KERNEL_IMAGE_NAME}-${SUFFIX}" >> $GITHUB_ENV
+          echo "ROOTFS=$PWD/alpine-${ARCH}.img" >> $GITHUB_ENV
+
+      - run: ls -lR
+
+      - name: Build art-kt
+        shell: bash
+        run: |
+          set -x
+
+          make $PWD/toolchain/clang
+
+          # LINUX_OUT is set in the environment
+          make art-kt
+
+      - run: ls -lR ${{ env.LINUX_OUT }}/modules_install
+
+      - name: Install testing dependencies
+        run: sudo apt update && sudo apt install -y qemu-system-x86 qemu-system-arm
+
+      - name: Test art-kt
+        shell: bash
+        run: |
+          set -x
+
+          MODULES_DIR=$LINUX_OUT/modules_install/lib/modules/*/
+
+          # Expand the glob
+          MODULES_DIR=$(echo $MODULES_DIR)
+
+          # The module won't load without `modules.dep`
+          echo "extra/art-kernel-toolkit.ko:" > $MODULES_DIR/modules.dep
+
+          # LINUX_OUT, ROOTFS, and QEMU_KERNEL_IMAGE are set in the environment
+          make art-kt_test | tee test.log
+
+          grep "All tests passed" test.log || exit 1
