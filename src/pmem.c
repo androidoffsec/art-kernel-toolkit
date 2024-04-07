@@ -19,8 +19,10 @@
 #include "art.h"
 #include "art_debugfs.h"
 
+#include <asm/io.h>
 #include <linux/debugfs.h>
 #include <linux/highmem.h>
+#include <linux/slab.h>
 #include <linux/version.h>
 
 static uint64_t addr;
