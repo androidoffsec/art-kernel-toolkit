@@ -164,78 +164,83 @@ else
     log "Skipping SMC test"
 fi
 
-log "Test asm"
+if [[ $AARCH64 == 1 ]]; then
+    log "Test asm"
 
-assert_eq asm/x0 0x0000000000000000
-assert_eq asm/x9 0x0000000000000000
-assert_eq asm/x28 0x0000000000000000
+    assert_eq asm/x0 0x0000000000000000
+    assert_eq asm/x9 0x0000000000000000
+    assert_eq asm/x28 0x0000000000000000
 
-# mov x0, 042; mov x9, 42; mov x28, 0x42
-ASM_CODE="400480d2490580d25c0880d2"
+    # mov x0, 042; mov x9, 42; mov x28, 0x42
+    ASM_CODE="400480d2490580d25c0880d2"
 
-# For some reason if the `xxd > /d/art/asm/asm` write fails, the exit code is
-# still zero. This doesn't happen for `cat`, so we write to a temporary file and
-# `cat` that into the `asm` file
-echo $ASM_CODE | xxd -r -p > /tmp/asm_code
+    # For some reason if the `xxd > /d/art/asm/asm` write fails, the exit code is
+    # still zero. This doesn't happen for `cat`, so we write to a temporary file and
+    # `cat` that into the `asm` file
+    echo $ASM_CODE | xxd -r -p > /tmp/asm_code
 
-cat /tmp/asm_code > "${MODULE_DIR}/asm/asm"
+    cat /tmp/asm_code > "${MODULE_DIR}/asm/asm"
 
-assert_eq asm/x0 0x0000000000000022
-assert_eq asm/x9 0x000000000000002a
-assert_eq asm/x28 0x0000000000000042
+    assert_eq asm/x0 0x0000000000000022
+    assert_eq asm/x9 0x000000000000002a
+    assert_eq asm/x28 0x0000000000000042
 
-# Verify zero and multi-CPU asm writes fails
-echo 0 > "${MODULE_DIR}/asm/cpumask"
-cat /tmp/asm_code > "${MODULE_DIR}/asm/asm" && fail
+    # Verify zero and multi-CPU asm writes fails
+    echo 0 > "${MODULE_DIR}/asm/cpumask"
+    cat /tmp/asm_code > "${MODULE_DIR}/asm/asm" && fail
 
-echo 0x3 > "${MODULE_DIR}/asm/cpumask"
-cat /tmp/asm_code > "${MODULE_DIR}/asm/asm" && fail
+    echo 0x3 > "${MODULE_DIR}/asm/cpumask"
+    cat /tmp/asm_code > "${MODULE_DIR}/asm/asm" && fail
 
-log "Test msr"
+    log "Test msr"
 
-# Set register by writing in individual fields
-echo 3 > "${MODULE_DIR}/msr/op0"
-echo 1 > "${MODULE_DIR}/msr/op1"
-echo 1 > "${MODULE_DIR}/msr/CRn"
-echo 1 > "${MODULE_DIR}/msr/CRm"
-echo 1 > "${MODULE_DIR}/msr/op2"
-assert_eq msr/regname s3_1_c1_c1_1
+    # Set register by writing in individual fields
+    echo 3 > "${MODULE_DIR}/msr/op0"
+    echo 1 > "${MODULE_DIR}/msr/op1"
+    echo 1 > "${MODULE_DIR}/msr/CRn"
+    echo 1 > "${MODULE_DIR}/msr/CRm"
+    echo 1 > "${MODULE_DIR}/msr/op2"
+    assert_eq msr/regname s3_1_c1_c1_1
 
-# Set register by writing uppercase and lowercase common names
-echo sctlr_el1 > "${MODULE_DIR}/msr/regname"
-assert_eq msr/regname s3_0_c1_c0_0
+    # Set register by writing uppercase and lowercase common names
+    echo sctlr_el1 > "${MODULE_DIR}/msr/regname"
+    assert_eq msr/regname s3_0_c1_c0_0
 
-assert_eq msr/op0 3
-assert_eq msr/op1 0
-assert_eq msr/CRn 1
-assert_eq msr/CRm 0
-assert_eq msr/op2 0
+    assert_eq msr/op0 3
+    assert_eq msr/op1 0
+    assert_eq msr/CRn 1
+    assert_eq msr/CRm 0
+    assert_eq msr/op2 0
 
-echo SCTLR_EL1 > "${MODULE_DIR}/msr/regname"
-assert_eq msr/regname s3_0_c1_c0_0
+    echo SCTLR_EL1 > "${MODULE_DIR}/msr/regname"
+    assert_eq msr/regname s3_0_c1_c0_0
 
-# Enabled flags: EPAN UCI SPAN TSCXT NTWE UCT DZE I SED SA0 SA C M
-SCTLR_EL1_VAL=0x200000034f4d91d
+    # Enabled flags: EPAN UCI SPAN TSCXT NTWE UCT DZE I SED SA0 SA C M
+    SCTLR_EL1_VAL=0x200000034f4d91d
 
-# Verify register value
-assert_eq msr/msr $SCTLR_EL1_VAL
+    # Verify register value
+    assert_eq msr/msr $SCTLR_EL1_VAL
 
-# Verify zero and multi-CPU reads fails
-echo 0 > "${MODULE_DIR}/msr/cpumask"
-cat "${MODULE_DIR}/msr/msr" && fail
+    # Verify zero and multi-CPU reads fails
+    echo 0 > "${MODULE_DIR}/msr/cpumask"
+    cat "${MODULE_DIR}/msr/msr" && fail
 
-echo 0x3 > "${MODULE_DIR}/msr/cpumask"
-cat "${MODULE_DIR}/msr/msr" && fail
+    echo 0x3 > "${MODULE_DIR}/msr/cpumask"
+    cat "${MODULE_DIR}/msr/msr" && fail
 
-# Set cpumask back to its original value
-echo 0x1 > "${MODULE_DIR}/msr/cpumask"
+    # Set cpumask back to its original value
+    echo 0x1 > "${MODULE_DIR}/msr/cpumask"
 
-# Disable EPAN and SPAN
-echo 0x3474d91d > "${MODULE_DIR}/msr/msr"
-assert_eq msr/msr 0x3474d91d
+    # Disable EPAN and SPAN
+    echo 0x3474d91d > "${MODULE_DIR}/msr/msr"
+    assert_eq msr/msr 0x3474d91d
 
-# The original value should still be set on a different CPU
-echo 0x2 > "${MODULE_DIR}/msr/cpumask"
-assert_eq msr/msr $SCTLR_EL1_VAL
+    # The original value should still be set on a different CPU
+    echo 0x2 > "${MODULE_DIR}/msr/cpumask"
+    assert_eq msr/msr $SCTLR_EL1_VAL
+else
+    log "Skipping asm test"
+    log "Skipping msr test"
+fi
 
 echo -e "${GREEN}[+] All tests passed ${NC}"
