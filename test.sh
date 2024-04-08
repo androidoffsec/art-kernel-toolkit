@@ -69,9 +69,16 @@ divide_hex() {
     printf "0x%x\n" $result
 }
 
+KERNEL_VERSION=$(uname -r | cut -d'-' -f1)
+
 AARCH64=0
 if [[ $(uname -m) == aarch64 ]]; then
     AARCH64=1
+fi
+
+ACK=0
+if grep "lede.ack=1" /proc/cmdline > /dev/null 2>&1 ; then
+    ACK=1
 fi
 
 QEMU=0
@@ -215,8 +222,14 @@ if [[ $AARCH64 == 1 ]]; then
     echo SCTLR_EL1 > "${MODULE_DIR}/msr/regname"
     assert_eq msr/regname s3_0_c1_c0_0
 
-    # Enabled flags: EPAN UCI SPAN TSCXT NTWE UCT DZE I SED SA0 SA C M
-    SCTLR_EL1_VAL=0x200000034f4d91d
+    # For some reason, EPAN is not enabled for android13-5.10-lts kernels
+    if [[ $ACK == 1 ]] && [[ $KERNEL_VERSION == 5.10.* ]]; then
+        # Enabled flags: UCI SPAN TSCXT NTWE UCT DZE I SED SA0 SA C M
+        SCTLR_EL1_VAL=0x34f4d91d
+    else
+        # Enabled flags: EPAN UCI SPAN TSCXT NTWE UCT DZE I SED SA0 SA C M
+        SCTLR_EL1_VAL=0x200000034f4d91d
+    fi
 
     # Verify register value
     assert_eq msr/msr $SCTLR_EL1_VAL
