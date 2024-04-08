@@ -14,6 +14,7 @@ jobs:
       ARCH: ${{ matrix.arch }}
       ARTIFACTS_URL: https://github.com/gsingh93/linux-exploit-dev-env/releases/download/2024.04.07-ebc24a8
       HEADERS_URL: https://github.com/gsingh93/linux-exploit-dev-env/releases/download/linux-headers-2024.04.07-ebc24a8
+      QEMU_RELEASE_URL: https://github.com/gsingh93/linux-exploit-dev-env/releases/download/qemu-8.2.2-94f421c94011baa837390074449cdd9811441c78
     steps:
 
       - name: Clone Linux Exploit Dev Environment
@@ -86,8 +87,28 @@ jobs:
 
       - run: ls -lR ${{ env.LINUX_OUT }}/modules_install
 
-      - name: Install testing dependencies
-        run: sudo apt update && sudo apt install -y qemu-system-x86 qemu-system-arm
+      - name: Download QEMU prebuilts
+        shell: bash
+        run: |
+          set -x
+
+          if [ $ARCH == x86_64 ]; then
+            QEMU_BIN=qemu-system-x86_64
+          elif [ $ARCH == arm64 ]; then
+            QEMU_BIN=qemu-system-aarch64
+          fi
+
+          wget --no-verbose ${QEMU_RELEASE_URL}/${QEMU_BIN}
+
+          chmod +x $QEMU_BIN
+
+          wget --no-verbose https://download.qemu.org/qemu-8.2.2.tar.xz
+          tar -xf qemu-8.2.2.tar.xz
+
+          echo "QEMU_BIN=$PWD/$QEMU_BIN" >> $GITHUB_ENV
+
+      - name: Install QEMU dependencies
+        run: sudo apt update && sudo apt install -y libfdt1
 
       - name: Test art-kt
         shell: bash
@@ -108,6 +129,6 @@ jobs:
           echo "${ART_KT_DIR}/art-kernel-toolkit.ko:" > $MODULES_DIR/modules.dep
 
           # LINUX_OUT, ROOTFS, and QEMU_KERNEL_IMAGE are set in the environment
-          make art-kt_test | tee test.log
+          QEMU_EXTRA_ARGS="-L qemu-8.2.2/pc-bios" make art-kt_test QEMU_BIN=$QEMU_BIN | tee test.log
 
           grep "All tests passed" test.log || exit 1
