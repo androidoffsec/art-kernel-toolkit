@@ -21,12 +21,18 @@ jobs:
         with:
           repository: gsingh93/linux-exploit-dev-env
 
+      # Don't clone submodules since we need to use the version of
+      # `art-kernel-toolkit` from the commit currently being tested
       - name: Clone build rules for art-kt
         uses: actions/checkout@v4
         with:
           repository: gsingh93/linux-exploit-dev-env-art-kt
-          submodules: true
           path: external/art-kt
+
+      - name: Clone art-kernel-toolkit
+        uses: actions/checkout@v4
+        with:
+          path: external/art-kt/art-kernel-toolkit
 
       - name: Download kernel artifacts
         shell: bash

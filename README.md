@@ -24,7 +24,7 @@ Contributions are welcome, see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 This is not an officially supported Google product.
 
----
+______________________________________________________________________
 
 - [Clone and Build](#clone-and-build)
 - [Installing](#installing)
